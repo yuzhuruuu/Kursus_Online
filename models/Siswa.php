@@ -30,11 +30,8 @@ class Siswa {
     }
 
     public function updateProfile($id, $nama, $nohp, $alamat, $pekerjaan) {
-    $sql = "UPDATE siswa 
-            SET nama_siswa=?, no_hp=?, alamat=?, pekerjaan=? 
-            WHERE id_siswa=?";
-    $stmt = $this->conn->prepare($sql);
-    return $stmt->bind_param("ssssi", $nama, $nohp, $alamat, $pekerjaan, $id) 
-           && $stmt->execute();
+        $sql = "UPDATE siswa SET nama_siswa=?, no_hp=?, alamat=?, pekerjaan=? WHERE id_siswa=?";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->bind_param("ssssi", $nama, $nohp, $alamat, $pekerjaan, $id) && $stmt->execute();
     }
 }

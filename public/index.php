@@ -1,6 +1,6 @@
 <?php
 // public/index.php (dashboard)
-require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/../config/database.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 if(!isset($_SESSION['id_siswa'])) {
     header("Location: login.php");
