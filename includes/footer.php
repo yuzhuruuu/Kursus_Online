@@ -36,7 +36,7 @@
             <div class="col-md-2 col-6 mb-4">
                 <h6 class="fw-bold mb-3" style="color: var(--dicoding-dark, #0b1c31);">Perusahaan</h6>
                 <ul class="list-unstyled">
-                    <li><a href="#" class="text-muted small text-decoration-none">Tentang Kami</a></li>
+                    <li><a href="/project-SBD/pages/about.php" class="text-muted small text-decoration-none">Tentang Kami</a></li> 
                     <li><a href="#" class="text-muted small text-decoration-none">Hubungi Kami</a></li>
                     <li><a href="#" class="text-muted small text-decoration-none">Tutor Kami</a></li>
                 </ul>

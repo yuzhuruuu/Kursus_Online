@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
 // Redirect ke login jika belum ada sesi siswa
 if(!isset($_SESSION['id_siswa'])) {
-    header("Location: login.php");
+    header("Location: ../pages/about.php");
     exit;
 }
 
