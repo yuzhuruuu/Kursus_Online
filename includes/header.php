@@ -88,7 +88,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 <nav class="navbar navbar-expand-lg navbar-custom">
     <div class="container">
         <!-- Brand/Logo (Home) -->
-        <a class="navbar-brand" href="/project-SBD/public/index.php">KursusOnline</a>
+        <a class="navbar-brand" href="/project-SBD/public/index.php">KursOn</a>
         
         <!-- Mock Search Bar (Tampilan seperti di Dicoding) -->
         <div class="d-none d-lg-block search-bar-mock">
