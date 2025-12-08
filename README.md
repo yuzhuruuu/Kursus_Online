@@ -165,7 +165,7 @@ This project menggunakan lisensi **MIT** — lihat file `LICENSE`.
 Jika ada pertanyaan, laporan bug, atau mau kolaborasi, hubungi:
 
 * Nama: Yusri
-* Email: *[tambahkan-email@domain.com](mailto:annisayusri59@gmail.com)*
+* Email: *[annisayusri59@gmail.com](mailto:annisayusri59@gmail.com)*
 
 ---
 
