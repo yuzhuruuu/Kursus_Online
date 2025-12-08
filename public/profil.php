@@ -29,12 +29,12 @@ $data_siswa = $stmt_siswa->get_result()->fetch_assoc();
 $stmt_lulus = $conn->prepare("
     SELECT 
         k.nama_kursus, 
-        p.presentase_progress, 
+        p.persentase_progres, 
         k.kategori,
         k.tingkat
-    FROM progress_belajar p
+    FROM progres_belajar p
     JOIN kursus k ON p.id_kursus = k.id_kursus
-    WHERE p.id_siswa = ? AND p.status_progress = 'Selesai'
+    WHERE p.id_siswa = ? AND p.status_progres = 'selesai' -- Pastikan ENUM case-sensitive
     ORDER BY k.id_kursus DESC
 ");
 $stmt_lulus->bind_param("i", $id_siswa);
@@ -66,11 +66,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_profil'])) {
             $pesan_sukses = 'Profil berhasil diperbarui!';
             $_SESSION['nama_siswa'] = $nama; 
             // Refresh data dari database setelah update
-            $data_siswa = $conn->query("
+            $stmt_refresh = $conn->prepare("
                 SELECT nama_siswa, email, no_hp, alamat, pekerjaan, foto_profil, tgl_daftar 
                 FROM siswa 
-                WHERE id_siswa = $id_siswa
-            ")->fetch_assoc();
+                WHERE id_siswa = ?
+            ");
+            $stmt_refresh->bind_param("i", $id_siswa);
+            $stmt_refresh->execute();
+            $data_siswa = $stmt_refresh->get_result()->fetch_assoc();
         } else {
             $pesan_error = 'Gagal memperbarui profil. Silakan coba lagi.';
         }
@@ -202,7 +205,7 @@ include __DIR__ . '/../includes/header.php';
                 
                 <!-- Tombol Hapus Akun (Menggunakan Modal) -->
                 <button type="button" class="btn btn-danger float-end" 
-                        data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                         data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
                     Hapus Akun
                 </button>
             </form>
@@ -238,7 +241,8 @@ include __DIR__ . '/../includes/header.php';
             <!-- Statistik Dasar -->
             <div class="mt-4 pt-3 border-top">
                 <p class="mb-1 small text-muted">Total Kursus Lulus: <span class="fw-bold text-success"><?= $kursus_lulus->num_rows; ?></span></p>
-                <p class="mb-0 small text-muted">Total Materi Selesai (Mockup): <span class="fw-bold">58 Modul</span></p>
+                <!-- NOTE: Di sini Anda harus menghitung total materi yang diselesaikan siswa secara dinamis. -->
+                <p class="mb-0 small text-muted">Total Materi Selesai (Mockup): <span class="fw-bold">7 Modul</span></p>
             </div>
         </div>
     </div>
@@ -258,14 +262,14 @@ include __DIR__ . '/../includes/header.php';
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <!-- Tombol ini harus mengarah ke logika hapus akun di Controller -->
-                <a href="hapus_akun.php" class="btn btn-danger">Ya, Hapus Akun Saya</a>
+                <!-- REVISI PENTING: Arahkan ke file aksi yang baru -->
+                <a href="delete_account.php" class="btn btn-danger">Ya, Hapus Akun Saya</a>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Konfirmasi Logout BARU -->
+<!-- Modal Konfirmasi Logout (Disarankan menggunakan Modal untuk konsistensi) -->
 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
@@ -287,14 +291,14 @@ include __DIR__ . '/../includes/header.php';
 <script>
     // Script JavaScript untuk mengubah link Logout di Header menjadi modal trigger
     document.addEventListener('DOMContentLoaded', function() {
-        const logoutLink = document.querySelector('a[href$="/public/logout.php"]');
+        // Cari link Logout di header
+        const logoutLink = document.querySelector('.navbar-nav a[href$="/public/logout.php"]');
         if (logoutLink) {
             // Kita harus mengubah link di header agar memicu modal, bukan langsung logout
             logoutLink.setAttribute('href', '#');
             logoutLink.setAttribute('data-bs-toggle', 'modal');
             logoutLink.setAttribute('data-bs-target', '#logoutModal');
-            // Menghapus class btn-custom-fill di header agar styling konsisten (opsional)
-            // logoutLink.classList.remove('btn-custom-fill'); 
+            // Jika ada class seperti btn-custom-fill di header, pastikan modal trigger tetap terlihat bagus.
         }
     });
 </script>

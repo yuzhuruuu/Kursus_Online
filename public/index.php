@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../config/database.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Redirect ke login jika belum ada sesi siswa
+// Redirect ke about.php jika belum ada sesi siswa (Sesuai Logika Anda)
 if(!isset($_SESSION['id_siswa'])) {
     header("Location: ../pages/about.php");
     exit;
@@ -13,7 +13,7 @@ $id_siswa = $_SESSION['id_siswa'];
 
 // --- QUERY DATA UNTUK DASHBOARD ---
 
-// 1. Ambil jumlah kursus yang diikuti
+// 1. Ambil jumlah subtes/kursus yang diikuti
 $stmt_total = $conn->prepare("SELECT COUNT(*) AS total FROM siswaKursus WHERE id_siswa = ?");
 $stmt_total->bind_param("i", $id_siswa);
 $stmt_total->execute();
@@ -24,18 +24,20 @@ $total_kursus = $stmt_total->get_result()->fetch_assoc()['total'];
 $stmt_progress = $conn->prepare("
     SELECT 
         k.nama_kursus, 
-        p.presentase_progress, 
-        p.status_progress
-    FROM progress_belajar p
+        p.persentase_progres, 
+        p.status_progres,
+        k.id_kursus
+    FROM progres_belajar p
     JOIN kursus k ON p.id_kursus = k.id_kursus
     WHERE p.id_siswa = ? 
-    ORDER BY p.presentase_progress DESC
+    ORDER BY p.persentase_progres DESC
+    LIMIT 4 -- Batasi agar dashboard tidak terlalu panjang
 ");
 $stmt_progress->bind_param("i", $id_siswa);
 $stmt_progress->execute();
 $active_progress = $stmt_progress->get_result();
 
-// 3. Ambil ringkasan penilaian terakhir
+// 3. Ambil ringkasan penilaian terbaru
 $stmt_recent = $conn->prepare("
     SELECT 
         k.nama_kursus, 
@@ -45,7 +47,7 @@ $stmt_recent = $conn->prepare("
     JOIN kursus k ON p.id_kursus=k.id_kursus 
     WHERE p.id_siswa=? 
     ORDER BY p.tgl_penilaian DESC 
-    LIMIT 5
+    LIMIT 3 -- Batasi hanya 3 data terbaru
 ");
 $stmt_recent->bind_param("i", $id_siswa);
 $stmt_recent->execute();
@@ -55,80 +57,120 @@ $recent_penilaian = $stmt_recent->get_result();
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<h3 class="mb-4">Halo, Selamat Datang <?= htmlspecialchars($_SESSION['nama_siswa']); ?> 👋</h3>
+<!-- ============================================================== -->
+<!-- HILANGKAN BLOK <style> YANG BERPOTENSI MENIMPA FOOTER -->
+<!-- Gunakan nilai heksa atau variabel CSS yang DITETAPKAN di header.php -->
+<!-- ============================================================== -->
+
+<h3 class="mb-4" style="color: var(--dicoding-dark);">Hallo, <?= htmlspecialchars($_SESSION['nama_siswa']); ?> 👋</h3>
 
 <div class="row g-4">
-    <!-- Kolom 1: Ringkasan & Total Kursus -->
+    <!-- Kolom Kiri: Statistik & Reminder -->
     <div class="col-lg-4 col-md-12">
-        <div class="card p-4 shadow-sm bg-primary text-white">
-            <h5 class="card-title">Total Kursus Diikuti</h5>
-            <h1 class="display-4 fw-bold mb-3"><?= $total_kursus ?></h1>
-            <a class="btn btn-sm btn-light mt-2" href="kursus.php">Telusuri Semua Kursus</a>
+        
+        <!-- 1. Total Kursus Diikuti (Statistik Utama) -->
+        <div class="card p-4 shadow-sm mb-4" 
+             style="background-color: var(--dicoding-dark, #0b1c31); color: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);">
+            <small class="text-info text-uppercase fw-bold">Subtes Diikuti</small>
+            <h1 class="display-3 fw-bolder my-2"><?= $total_kursus ?></h1>
+            <p class="text-light mb-3">Total Subtes yang sudah Anda daftarkan.</p>
+            <a class="btn btn-sm btn-info fw-bold w-100" href="kursus.php" 
+               style="background-color: var(--dicoding-accent, #00bcd4); border-color: var(--dicoding-accent, #00bcd4); color: var(--dicoding-dark);">
+                Telusuri Subtes UTBK
+            </a>
         </div>
 
-        <!-- Notifikasi/Reminder (Fitur Unik) -->
-        <div class="card p-3 mt-4 shadow-sm border-warning">
-            <h5 class="text-warning">🔔 Learning Reminder</h5>
-            <!-- Logika sederhana: tampilkan pesan jika progres kosong -->
-            <?php if($total_kursus == 0): ?>
-                <p>Ayo mulai kursus pertamamu sekarang! Kami siap membantumu mencapai tujuan.</p>
-            <?php else: ?>
-                <p>Cek kembali kursus yang stagnan, jangan biarkan belajarmu tertunda!</p>
-                <!-- Di sini, logika yang lebih kompleks bisa memeriksa tabel progress_belajar
-                     untuk status_progress='Stagnan' atau tgl_terakhir_update > 7 hari. -->
-            <?php endif; ?>
+        <!-- 2. Notifikasi/Reminder (Fitur Unik) -->
+        <div class="card p-3 shadow-sm" 
+             style="background-color: var(--dicoding-soft, #f8f9fa); border: 1px solid var(--dicoding-accent, #00bcd4); border-radius: 10px;">
+            <h5 style="color: var(--dicoding-dark);">🔔 Learning Reminder</h5>
+            <small class="text-muted">Jadwal atau subtes yang perlu diperhatikan.</small>
+            
+            <div class="mt-3">
+                <?php if($total_kursus == 0): ?>
+                    <p class="mb-0">Ayo mulai Subtes pertamamu sekarang! Pilih Saintek atau Soshum.</p>
+                    <a href="kursus.php" class="text-primary fw-bold">Lihat Semua Subtes &rarr;</a>
+                <?php else: ?>
+                    <p class="mb-0">Anda memiliki subtes yang stagnan. Jangan biarkan belajarmu tertunda!</p>
+                    <a href="progress.php" class="text-danger fw-bold">Cek Progres Sekarang &rarr;</a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
-    <!-- Kolom 2: Progres Aktif (Real-time Monitoring) -->
+    <!-- Kolom Kanan: Progres Aktif dan Penilaian Terbaru -->
     <div class="col-lg-8 col-md-12">
-        <div class="card p-4 shadow-sm">
-            <h4 class="card-title mb-3">Kursus Aktif dan Progres Belajar</h4>
+        
+        <!-- 3. Progres Aktif (Real-time Monitoring) -->
+        <div class="card p-4 shadow-sm mb-4" 
+             style="border-left: 4px solid var(--dicoding-accent, #00bcd4); border-radius: 10px;">
+            <h4 class="card-title mb-4" style="color: var(--dicoding-dark);">Progres Subtes Aktif (Teratas)</h4>
             <?php if($active_progress->num_rows === 0): ?>
-                <div class="alert alert-info">Anda belum mengambil kursus apapun.</div>
+                <div class="alert alert-info border-0">Anda belum mengambil Kuis apapun.</div>
             <?php else: ?>
                 <?php while($p = $active_progress->fetch_assoc()): ?>
                     <div class="mb-3">
-                        <small class="fw-bold"><?= htmlspecialchars($p['nama_kursus']); ?> 
-                            (<?= htmlspecialchars($p['status_progress']); ?>)
-                        </small>
-                        <div class="progress mt-1" style="height: 20px;">
-                            <div class="progress-bar 
-                                <?= $p['presentase_progress'] == 100 ? 'bg-success' : 'bg-info'; ?>" 
-                                role="progressbar" 
-                                style="width: <?= $p['presentase_progress']; ?>%" 
-                                aria-valuenow="<?= $p['presentase_progress']; ?>" 
-                                aria-valuemin="0" 
-                                aria-valuemax="100">
-                                <?= $p['presentase_progress']; ?>% Selesai
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="fw-bold text-truncate" style="color: var(--dicoding-dark);">
+                                <?= htmlspecialchars($p['nama_kursus']); ?>
+                            </small>
+                            <small class="text-muted text-end">
+                                Status: <span class="badge 
+                                    <?= $p['status_progres'] == 'selesai' ? 'bg-success' : 
+                                      ($p['status_progres'] == 'sedang_berjalan' ? 'bg-primary' : 'bg-secondary'); ?>">
+                                    <?= ucfirst(str_replace('_', ' ', htmlspecialchars($p['status_progres']))); ?>
+                                </span>
+                            </small>
+                        </div>
+                        <div class="progress mt-1" style="height: 15px; background-color: #f0f0f0;">
+                            <div class="progress-bar" 
+                                 style="width: <?= $p['persentase_progres']; ?>%; background-color: var(--dicoding-accent, #00bcd4); transition: width 0.6s ease;"
+                                 role="progressbar" 
+                                 aria-valuenow="<?= $p['persentase_progres']; ?>" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                 <small class="fw-bold"><?= $p['persentase_progres']; ?>%</small>
                             </div>
                         </div>
                     </div>
                 <?php endwhile; ?>
             <?php endif; ?>
         </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <!-- Kolom 3: Penilaian Terbaru -->
-    <div class="col-12">
-        <div class="card p-4 shadow-sm">
-            <h4 class="card-title mb-3">5 Penilaian Kuis Terbaru</h4>
+        
+        <!-- 4. Penilaian Terbaru -->
+        <div class="card p-4 shadow-sm" style="border-radius: 10px;">
+            <h4 class="card-title mb-3" style="color: var(--dicoding-dark);">Nilai Kuis Terbaru</h4>
             <?php if($recent_penilaian->num_rows === 0): ?>
-                <p>Anda belum menyelesaikan kuis apapun.</p>
+                <div class="alert alert-warning border-0">Anda belum menyelesaikan kuis apapun.</div>
             <?php else: ?>
                 <ul class="list-group list-group-flush">
                     <?php while($r = $recent_penilaian->fetch_assoc()): ?>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <?php 
+                            // Tentukan warna badge nilai
+                            $nilai_badge_class = 'bg-danger';
+                            if ($r['nilai'] >= 80) {
+                                $nilai_badge_class = 'bg-success';
+                            } elseif ($r['nilai'] >= 60) {
+                                $nilai_badge_class = 'bg-warning text-dark';
+                            } else {
+                                $nilai_badge_class = 'bg-danger';
+                            }
+                        ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                            style="border-left: 4px solid transparent; transition: border-left 0.3s ease;">
                             <div>
-                                <span class="badge bg-secondary me-2"><?= date('d M Y', strtotime($r['tgl_penilaian'])); ?></span>
-                                <strong><?= htmlspecialchars($r['nama_kursus']); ?></strong>
+                                <span class="badge bg-secondary me-3" style="font-weight: normal;"><?= date('d M Y', strtotime($r['tgl_penilaian'])); ?></span>
+                                <strong style="color: var(--dicoding-dark);"><?= htmlspecialchars($r['nama_kursus']); ?></strong>
                             </div>
-                            <span class="badge bg-primary rounded-pill p-2 fs-6">Nilai: <?= htmlspecialchars($r['nilai']); ?></span>
+                            <span class="badge <?= $nilai_badge_class; ?> rounded-pill p-2 fs-6">
+                                <?= htmlspecialchars($r['nilai']); ?>
+                            </span>
                         </li>
                     <?php endwhile; ?>
                 </ul>
+                <div class="text-end mt-3">
+                    <a href="progress.php" class="text-primary small fw-bold">Lihat Semua Nilai &rarr;</a>
+                </div>
             <?php endif; ?>
         </div>
     </div>

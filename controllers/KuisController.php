@@ -1,64 +1,68 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
+// controllers/KuisController.php
+
+if (!isset($conn)) {
+    require_once __DIR__ . '/../config/database.php';
+    global $conn;
+}
+
+require_once __DIR__ . '/../models/Kuis.php'; 
 require_once __DIR__ . '/../models/Progress.php';
-require_once __DIR__ . '/../models/Kuis.php'; // Digunakan untuk mencari id_kursus dari id_materi
-require_once __DIR__ . '/../models/Materi.php'; // Digunakan untuk menghitung total materi
+require_once __DIR__ . '/../models/Penilaian.php'; // Asumsi model ini sudah/akan dibuat
+require_once __DIR__ . '/../models/Kursus.php'; 
 
 class KuisController {
     private $db;
+    private $kuisModel;
 
     public function __construct($db) {
         $this->db = $db;
-    }
-
-    // Fungsi bantu: Menghitung jumlah materi yang sudah dinilai/selesai oleh siswa
-    private function countCompletedMateri($id_siswa, $id_kursus) {
-        // Dalam konteks ini, kita asumsikan materi 'selesai' jika siswa memiliki penilaian
-        // (nilai > 0) untuk kuis yang terhubung dengan materi tersebut.
-        $sql = "SELECT COUNT(DISTINCT m.id_materi) AS selesai_count
-                FROM penilaian p
-                JOIN materi m ON p.id_kursus = m.id_kursus
-                WHERE p.id_siswa = ? AND p.id_kursus = ? AND p.nilai > 0";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("ii", $id_siswa, $id_kursus);
-        $stmt->execute();
-        $result = $stmt->get_result()->fetch_assoc();
-        return (int)$result['selesai_count'];
-    }
-
-    public function submitKuis($id_siswa, $id_materi, $jawaban_siswa) {
-        // [ASUMSI] Anda mendapatkan hasil dan id_kursus yang relevan di sini
-        // Misalnya, Anda perlu mencari id_kursus dari id_materi
-        $materi_model = new Materi($this->db);
-        $materi_detail = $materi_model->getDetail($id_materi);
-        if (!$materi_detail) return false;
-        
-        $id_kursus = $materi_detail['id_kursus'];
-
-        // 1. Insert Hasil Kuis ke tabel penilaian
-        // [ASUMSI] Anda menghitung dan menyimpan nilai/hasil kuis ke tabel penilaian di sini.
-        $nilai_akhir = 80; // Contoh nilai
-        $tgl_penilaian = date('Y-m-d H:i:s');
-        
-        $stmt_nilai = $this->db->prepare("INSERT INTO penilaian (id_siswa, id_kursus, id_materi, nilai, tgl_penilaian) VALUES (?, ?, ?, ?, ?)");
-        $stmt_nilai->bind_param("iiiis", $id_siswa, $id_kursus, $id_materi, $nilai_akhir, $tgl_penilaian);
-        $stmt_nilai->execute();
-
-        // 2. TRIGGER LOGIC UPDATE PROGRES
-        $progress_model = new Progress($this->db);
-        
-        // a. Hitung total materi (diperlukan untuk updateProgress)
-        $total_materi = $materi_model->getTotalMateriByKursus($id_kursus);
-        
-        // b. Hitung materi yang sudah selesai
-        $materi_selesai = $this->countCompletedMateri($id_siswa, $id_kursus);
-        
-        // c. Update progress_belajar
-        $progress_model->updateProgress($id_siswa, $id_kursus, $materi_selesai, $total_materi);
-        
-        return true; // Proses kuis dan update progres berhasil
+        $this->kuisModel = new Kuis($db);
     }
     
-    // ... Tambahkan method lain yang mungkin Anda miliki
+    /**
+     * [FUNGSI YANG HILANG] Mengambil semua soal kuis untuk Tryout Subtes tertentu (10 soal).
+     */
+    public function getSoalTryout($id_kursus){
+        // Memanggil Model Kuis untuk mengambil soal berdasarkan ID Kursus
+        return $this->kuisModel->getKuisByKursus($id_kursus);
+    }
+    
+    /**
+     * Memproses jawaban kuis dan menyimpan hasilnya ke tabel penilaian.
+     */
+    public function submitTryout($id_siswa, $id_kursus, $jawaban){
+        $this->db->begin_transaction();
+        
+        try {
+            $total_soal = 0;
+            $jawaban_benar = 0;
+
+            // 1. Hitung Nilai
+            foreach ($jawaban as $id_kuis => $jawaban_siswa) {
+                $total_soal++;
+                $jawaban_db = $this->kuisModel->getJawabanBenar($id_kuis);
+                
+                if (strtoupper($jawaban_siswa) === strtoupper($jawaban_db)) {
+                    $jawaban_benar++;
+                }
+            }
+            
+            $nilai = ($total_soal > 0) ? round(($jawaban_benar / $total_soal) * 100) : 0;
+            
+            // 2. Simpan Hasil ke tabel Penilaian
+            $penilaianModel = new Penilaian($this->db);
+            if (!$penilaianModel->saveNilai($id_siswa, $id_kursus, $nilai, "Kuis Subtes")) {
+                throw new Exception("Gagal menyimpan nilai kuis.");
+            }
+            
+            $this->db->commit();
+            return $nilai; 
+
+        } catch (Exception $e) {
+            $this->db->rollback();
+            error_log("Submit Kuis Gagal: " . $e->getMessage());
+            return 0; // Mengembalikan nilai 0 jika gagal
+        }
+    }
 }

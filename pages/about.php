@@ -18,14 +18,14 @@ include __DIR__ . '/../includes/header.php';
 <div class="row justify-content-center">
     <div class="col-lg-10">
         <h1 class="mb-5 text-center" style="color: var(--dicoding-dark); font-weight: 700;">
-            Wujudkan Karir Digital Anda Bersama Kami
+            Lolos PTN Impian? Persiapan UTBK Terstruktur, Terukur, dan Real time
         </h1>
         
         <!-- Bagian Visi & Misi (Menggunakan Deskripsi Ide Proyek Anda) -->
         <div class="p-4 mb-5" style="border-left: 5px solid var(--dicoding-accent); background-color: var(--dicoding-soft);">
-            <h4 style="color: var(--dicoding-dark);">Ide Proyek Kami: Manajemen Kursus & Progres Real-time</h4>
+            <h4 style="color: var(--dicoding-dark);">Kuis Sesuai Materi & Progres Belajar Khusus UTBK/SNBT</h4>
             <p class="lead mb-0">
-                Platform Kursus Online & Pemantauan Progres Belajar dirancang untuk mengatur kursus, tutor, siswa, materi, penilaian, kuis, dan **dashboard perkembangan belajar** secara terpadu.
+                Platform ini adalah website kursus online yang dirancang khusus untuk menghadapi UTBK/SNBT. Kami mengatur materi per subtes, menyediakan materi, kuis, dan menyajikan progres belajar secara terpadu untuk memastikan fokus belajar Anda tepat sasaran.
             </p>
         </div>
 
@@ -44,10 +44,10 @@ include __DIR__ . '/../includes/header.php';
             <div class="col-md-6">
                 <h5 class="text-success mb-3">Fitur Cerdas dan Unik</h5>
                 <ul class="list-unstyled">
-                    <li><span class="text-warning fw-bold me-2">💡</span> **Sistem Rekomendasi Kursus** lanjutan berdasarkan performa siswa.</li>
-                    <li><span class="text-warning fw-bold me-2">💡</span> **Monitoring Progress Real-Time** untuk tutor & admin.</li>
-                    <li><span class="text-warning fw-bold me-2">💡</span> **Integrasi Evaluasi Otomatis** hasil kuis langsung memengaruhi progres.</li>
-                    <li><span class="text-warning fw-bold me-2">💡</span> **Fitur Pengingat Belajar** jika siswa stagnan.</li>
+                    <li><span class="text-warning fw-bold me-2">💡</span> Sistem Rekomendasi Kursus berdasarkan performa kuis.</li>
+                    <li><span class="text-warning fw-bold me-2">💡</span> Monitoring Progress Real-Time Subtes untuk siswa.</li>
+                    <li><span class="text-warning fw-bold me-2">💡</span> Integrasi Evaluasi Otomatis Hasil kuis langsung memengaruhi progres belajar siswa.</li>
+                    <li><span class="text-warning fw-bold me-2">💡</span> Fitur Pengingat Belajar jika progres belajar siswa stagnan.</li>
                 </ul>
             </div>
         </div>
@@ -66,12 +66,12 @@ include __DIR__ . '/../includes/header.php';
             <div class="col-md-4">
                 <div class="p-4 border rounded shadow-sm">
                     <h1 class="display-4 fw-bold text-primary"><?= htmlspecialchars($total_kursus); ?></h1>
-                    <p class="text-muted">Total Kelas Tersedia</p>
+                    <p class="text-muted">Total Subtes & Materi Tersedia</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="p-4 border rounded shadow-sm">
-                    <h1 class="display-4 fw-bold text-warning">4.8</h1>
+                    <h1 class="display-4 fw-bold text-warning">4.9</h1>
                     <p class="text-muted">Rata-rata Rating Kelas</p>
                 </div>
             </div>
@@ -79,8 +79,8 @@ include __DIR__ . '/../includes/header.php';
         
         <!-- Call to Action -->
         <div class="text-center mt-5 p-4 border rounded bg-light">
-            <h4 style="color: var(--dicoding-dark);">Siap untuk Memulai Perjalanan Belajar Anda?</h4>
-            <p class="lead">Daftar sekarang dan akses kelas perdana Anda secara gratis!</p>
+            <h4 style="color: var(--dicoding-dark);">Siap untuk Menaklukkan UTBK/SNBT?</h4>
+            <p class="lead">Daftar sekarang dan mulai belajar dari Materi perdana Anda secara gratis!</p>
             <a href="/project-SBD/public/register.php" class="btn btn-lg btn-primary fw-bold">Daftar Sekarang</a>
             <a href="/project-SBD/public/login.php" class="btn btn-lg btn-outline-secondary ms-2">Masuk</a>
         </div>

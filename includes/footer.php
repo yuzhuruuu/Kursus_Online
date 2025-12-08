@@ -4,12 +4,13 @@
 <!-- includes/footer.php -->
 </div> <!-- Menutup div.container mt-4 dari header -->
 
-<footer class="footer mt-auto py-5" style="background-color: var(--dicoding-soft, #f8f9fa); border-top: 1px solid #e9ecef;">
+<!-- Pastikan footer menggunakan variabel CSS yang konsisten -->
+<footer class="footer mt-auto py-5" style="background-color: var(--dicoding-soft, #f0f0f0); border-top: 1px solid #e9ecef;">
     <div class="container">
         <div class="row">
             <!-- Kolom 1: Logo & Alamat -->
             <div class="col-md-4 mb-4">
-                <h4 style="color: var(--dicoding-dark, #0b1c31); font-weight: 700;">KursusOnline</h4>
+                <h4 style="color: var(--dicoding-dark, #0b1c31); font-weight: 700;">Instan UTBK</h4>
                 <p class="small text-muted">
                     Jl. Teknologi Digital No. 101,<br>
                     Kota Semarang, Jawa Tengah 40123
@@ -22,13 +23,13 @@
                 </div>
             </div>
 
-            <!-- Kolom 2: Informasi Kursus -->
+            <!-- Kolom 2: Informasi Kursus (Revisi Konten ke UTBK) -->
             <div class="col-md-2 col-6 mb-4">
-                <h6 class="fw-bold mb-3" style="color: var(--dicoding-dark, #0b1c31);">Program</h6>
+                <h6 class="fw-bold mb-3" style="color: var(--dicoding-dark, #0b1c31);">Program UTBK</h6>
                 <ul class="list-unstyled">
-                    <li><a href="/project-SBD/public/kursus.php" class="text-muted small text-decoration-none">Semua Kursus</a></li>
-                    <li><a href="#" class="text-muted small text-decoration-none">Learning Path</a></li>
-                    <li><a href="#" class="text-muted small text-decoration-none">Rekomendasi Terbaik</a></li>
+                    <li><a href="/project-SBD/public/kursus.php" class="text-muted small text-decoration-none">Semua Subtes</a></li>
+                    <li><a href="#" class="text-muted small text-decoration-none">Pilihan Saintek</a></li>
+                    <li><a href="#" class="text-muted small text-decoration-none">Pilihan Soshum</a></li>
                 </ul>
             </div>
 
@@ -57,7 +58,7 @@
         <hr class="text-muted">
         <div class="row">
             <div class="col-12 text-center text-muted small">
-                © <?= date("Y"); ?> KursusOnline. All rights reserved. 
+                © <?= date("Y"); ?> Instan. All rights reserved. 
             </div>
         </div>
     </div>

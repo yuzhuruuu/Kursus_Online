@@ -1,54 +1,56 @@
 <?php
 // models/Progress.php
+
 class Progress {
     private $conn;
-    private $table = 'progress_belajar';
+    private $table_name = "progres_belajar";
 
-    public function __construct($db) {
+    public function __construct($db){
         $this->conn = $db;
     }
 
-    // Fungsi 1: Membuat entri progress awal (Dipanggil saat siswa ambil kursus)
-    public function createInitialProgress($id_siswa, $id_kursus, $total_materi) {
-        // Cek apakah entri sudah ada untuk menghindari duplikat
-        $check_query = "SELECT id_progress FROM " . $this->table . " WHERE id_siswa = ? AND id_kursus = ?";
-        $check_stmt = $this->conn->prepare($check_query);
-        $check_stmt->bind_param("ii", $id_siswa, $id_kursus);
-        $check_stmt->execute();
-        
-        if ($check_stmt->get_result()->num_rows > 0) {
-            return true; // Entri sudah ada
-        }
+    /**
+     * Fungsi untuk membuat entri progres awal (saat enrollment)
+     */
+    public function createInitialProgress($id_siswa, $id_kursus, $total_materi){
+        // Status awal: 'belum_mulai', Materi Selesai: 0, Persentase: 0
+        $status = 'belum_mulai';
+        $materi_selesai = 0;
+        $persentase = 0;
 
-        // Jika belum ada, buat entri baru
-        $query = "INSERT INTO " . $this->table . " 
-                  (id_siswa, id_kursus, total_materi, presentase_progress, status_progress) 
-                  VALUES (?, ?, ?, 0, 'Baru')";
+        // PENTING: Pastikan urutan dan jumlah placeholder (?) sesuai dengan bind_param
+        $stmt = $this->conn->prepare("
+            INSERT INTO " . $this->table_name . " (id_siswa, id_kursus, materi_selesai, total_materi, persentase_progres, status_progres) 
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
         
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("iii", $id_siswa, $id_kursus, $total_materi); 
+        // Tipe: integer, integer, integer, integer, integer, string
+        $stmt->bind_param("iiiiis", $id_siswa, $id_kursus, $materi_selesai, $total_materi, $persentase, $status);
         
         return $stmt->execute();
     }
-
-    // Fungsi 2: Mengupdate progres (Dipanggil setelah kuis/materi selesai)
-    public function updateProgress($id_siswa, $id_kursus, $materi_selesai, $total_materi) {
-        // Pastikan total materi tidak nol
-        if ($total_materi == 0) {
-            return false; 
-        }
+    
+    // ... (Fungsi-fungsi lain yang sudah ada)
+    
+    // 1. Mengambil data progres spesifik siswa untuk suatu kursus
+    public function getProgresByKursus($id_siswa, $id_kursus) {
+        $stmt = $this->conn->prepare("SELECT * FROM " . $this->table_name . " WHERE id_siswa = ? AND id_kursus = ?");
+        $stmt->bind_param("ii", $id_siswa, $id_kursus);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+    
+    // 2. Memperbarui data progres setelah materi selesai
+    public function updateProgress($id_siswa, $id_kursus, $materi_selesai_baru, $persentase_baru, $status_baru) {
+        $stmt = $this->conn->prepare("
+            UPDATE " . $this->table_name . " 
+            SET materi_selesai = ?, persentase_progres = ?, status_progres = ? 
+            WHERE id_siswa = ? AND id_kursus = ?
+        ");
+        // Tipe: integer, integer, string, integer, integer
+        $stmt->bind_param("iisii", $materi_selesai_baru, $persentase_baru, $status_baru, $id_siswa, $id_kursus);
         
-        // Hitung persentase
-        $presentase = round(($materi_selesai / $total_materi) * 100);
-        $status = ($presentase == 100) ? 'Selesai' : 'Berjalan';
-        
-        $query = "UPDATE " . $this->table . " 
-                  SET presentase_progress = ?, status_progress = ?
-                  WHERE id_siswa = ? AND id_kursus = ?";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("isii", $presentase, $status, $id_siswa, $id_kursus); 
-
         return $stmt->execute();
     }
 }

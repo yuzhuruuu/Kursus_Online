@@ -1,14 +1,17 @@
 <?php
 // controllers/KursusController.php
 require_once __DIR__ . '/../config/database.php';
+// Memastikan semua file model di-include
 require_once __DIR__ . '/../models/Materi.php';
 require_once __DIR__ . '/../models/Progress.php';
 require_once __DIR__ . '/../models/Kursus.php';
 
 class KursusController {
+    private $db;
     private $model;
 
     public function __construct($db){
+        $this->db = $db;
         $this->model = new Kursus($db);
     }
 
@@ -20,37 +23,46 @@ class KursusController {
         return $this->model->getById($id);
     }
 
-    public function daftarKursus($id_siswa, $id_kursus){
-        return $this->model->enroll($id_siswa, $id_kursus);
-    }
-
     public function cekSudahAmbil($id_siswa, $id_kursus){
         return $this->model->isTaken($id_siswa, $id_kursus);
     }
-    public function ambilKursus($id_siswa, $id_kursus) {
-        $kursus_diambil = false;
 
-        // 1. Catat Siswa mengambil Kursus (INSERT INTO siswakursus)
-        // [ASUMSI] Anda memiliki logic INSERT ke tabel siswakursus di sini
-        $stmt_sk = $this->db->prepare("INSERT INTO siswakursus (id_siswa, id_kursus) VALUES (?, ?)");
-        $stmt_sk->bind_param("ii", $id_siswa, $id_kursus);
-        if ($stmt_sk->execute()) {
-            $kursus_diambil = true;
+    /**
+     * Fungsi untuk mendaftarkan siswa ke subtes dan membuat entri progres awal.
+     * Nama fungsi ini harus sama persis dengan yang dipanggil di public/enroll_kursus.php.
+     */
+    public function enrollKursus($id_siswa, $id_kursus){
+        // Cek apakah sudah terdaftar
+        if ($this->model->isTaken($id_siswa, $id_kursus)) {
+            return "sudah_terdaftar";
         }
-
-        if ($kursus_diambil) {
-            // 2. TRIGGER LOGIC PROGRES AWAL
+        
+        // Mulai transaksi database
+        $this->db->begin_transaction();
+        
+        try {
+            // 1. Catat Siswa mengambil Kursus (INSERT INTO siswakursus)
+            if (!$this->model->enroll($id_siswa, $id_kursus)) {
+                throw new Exception("Gagal mendaftarkan siswa ke subtes (Model Enroll).");
+            }
+            
+            // 2. Tentukan total materi untuk progres awal
             $materi_model = new Materi($this->db);
-            $progress_model = new Progress($this->db);
-
             $total_materi = $materi_model->getTotalMateriByKursus($id_kursus);
             
-            // Buat entri awal di progress_belajar (progress 0%)
-            $progress_model->createInitialProgress($id_siswa, $id_kursus, $total_materi);
+            // 3. Buat entri awal di progres_belajar (progress 0%)
+            $progress_model = new Progress($this->db);
+            if (!$progress_model->createInitialProgress($id_siswa, $id_kursus, $total_materi)) {
+                throw new Exception("Gagal membuat progres awal.");
+            }
             
-            return true; // Pendaftaran dan progres awal berhasil
-        }
+            $this->db->commit(); // Commit jika semua berhasil
+            return "berhasil"; 
 
-        return false; // Pendaftaran gagal
+        } catch (Exception $e) {
+            $this->db->rollback(); // Rollback jika ada error
+            error_log("Enrollment Gagal: " . $e->getMessage());
+            return "gagal";
+        }
     }
 }
