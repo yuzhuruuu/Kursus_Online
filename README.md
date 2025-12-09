@@ -40,7 +40,6 @@ Aplikasi dimodelkan menggunakan Entity-Relationship Diagram (ERD) untuk mendukun
 * **Relasi N:M**: Relasi antara `siswa` dan `kursus` diselesaikan melalui tabel penghubung `siswaKursus` (enrollment).
 * **Penilaian**: Hasil kuis disimpan di tabel `penilaian`, berelasi dengan `siswa` dan `kursus`.
 
-> *Catatan*: Sertakan file ERD (gambar) di folder `assets/img/` jika ingin menampilkan diagram di README.
 
 ---
 
