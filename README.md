@@ -40,7 +40,9 @@ Aplikasi dimodelkan menggunakan Entity-Relationship Diagram (ERD) untuk mendukun
 * **Relasi N:M**: Relasi antara `siswa` dan `kursus` diselesaikan melalui tabel penghubung `siswaKursus` (enrollment).
 * **Penilaian**: Hasil kuis disimpan di tabel `penilaian`, berelasi dengan `siswa` dan `kursus`.
 
+<<<<<<< HEAD
 > *Catatan*: Sertakan file ERD (gambar) di folder `assets/img/` jika ingin menampilkan diagram di README.
+=======
 
 ---
 
@@ -164,8 +166,13 @@ This project menggunakan lisensi **MIT** — lihat file `LICENSE`.
 
 Jika ada pertanyaan, laporan bug, atau mau kolaborasi, hubungi:
 
+<<<<<<< HEAD
 * Nama: Yusri (pemilik project)
 * Email: *[tambahkan-email@domain.com](mailto:tambahkan-email@domain.com)*
+=======
+* Nama: Yusri
+* Email: *[annisayusri59@gmail.com](mailto:annisayusri59@gmail.com)*
+>>>>>>> aa3df1a300e26df55af4814df59176cc98f8a967
 
 ---
 
