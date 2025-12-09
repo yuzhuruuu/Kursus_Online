@@ -22,12 +22,9 @@ class ProgressController {
     }
     
     /**
-     * [FUNGSI YANG HILANG] Mengambil semua progres kursus siswa
-     * @param int $id_siswa ID Siswa
-     * @return mysqli_result Hasil query data progres dan kursus terkait.
+     * Mengambil semua progres kursus siswa. (Logika Display Dashboard)
      */
     public function getProgress($id_siswa) {
-        // Gabungkan progres_belajar dengan kursus dan penilaian terbaru
         $sql = "
             SELECT 
                 p.id_progres,
@@ -52,29 +49,80 @@ class ProgressController {
         return $stmt->get_result();
     }
 
-    // FUNGSI LAINNYA (isMateriSudahSelesai, markMateriSelesai, dll.)
-    
+    /**
+     * [LOGIC BARU] Memeriksa apakah materi sudah diselesaikan oleh siswa (Membaca dari tabel progress_materi).
+     */
     public function isMateriSudahSelesai($id_siswa, $id_materi) {
-        // Placeholder, implementasi nyata memerlukan tabel progress_materi
-        return false; 
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM progress_materi WHERE id_siswa = ? AND id_materi = ?");
+        $stmt->bind_param("ii", $id_siswa, $id_materi);
+        $stmt->execute();
+        $count = $stmt->get_result()->fetch_row()[0] ?? 0;
+        return $count > 0;
     }
 
+    /**
+     * [LOGIC BARU TRANSAKSI] Menandai materi sebagai selesai dan memperbarui progres total kursus.
+     */
     public function markMateriSelesai($id_siswa, $id_kursus, $id_materi){
-        $progres = $this->progressModel->getProgresByKursus($id_siswa, $id_kursus);
-
-        if (!$progres) { return false; }
+        $this->db->begin_transaction();
         
-        $materi_selesai_baru = $progres['materi_selesai'] + 1;
-        $total_materi = $progres['total_materi'];
+        try {
+            // 1. Cek duplikat klik (menggunakan tabel progress_materi)
+            if ($this->isMateriSudahSelesai($id_siswa, $id_materi)) {
+                 $this->db->rollback();
+                 return true; // Sudah selesai, anggap sukses dan hentikan proses
+            }
+            
+            // 2. INSERT ke tabel progress_materi
+            $stmt_insert = $this->db->prepare("INSERT INTO progress_materi (id_siswa, id_materi, tgl_selesai) VALUES (?, ?, NOW())");
+            $stmt_insert->bind_param("ii", $id_siswa, $id_materi);
+            if (!$stmt_insert->execute()) {
+                throw new Exception("Gagal mencatat materi selesai.");
+            }
 
-        if ($materi_selesai_baru > $total_materi) { $materi_selesai_baru = $total_materi; }
+            // 3. Hitung Ulang Progres Total
+            $total_materi = $this->materiModel->getTotalMateriByKursus($id_kursus);
+            
+            // ASUMSI: progressModel memiliki countMateriSelesaiPerKursus()
+            $materi_selesai_baru = $this->progressModel->countMateriSelesaiPerKursus($id_siswa, $id_kursus);
+            
+            $persentase_baru = round(($materi_selesai_baru / $total_materi) * 100);
+            $status_baru = ($persentase_baru == 100) ? 'selesai' : 'sedang_berjalan';
+            
+            // 4. Update tabel progres_belajar
+            $update_result = $this->progressModel->updateProgress($id_siswa, $id_kursus, $materi_selesai_baru, $persentase_baru, $status_baru);
+            
+            if (!$update_result) {
+                throw new Exception("Gagal update progres total.");
+            }
 
-        $persentase_baru = round(($materi_selesai_baru / $total_materi) * 100);
+            $this->db->commit();
+            return true;
+            
+        } catch (Exception $e) {
+            $this->db->rollback();
+            error_log("Progress Update Gagal: " . $e->getMessage());
+            return false;
+        }
+    }
 
-        $status_baru = ($persentase_baru == 100) ? 'selesai' : 'sedang_berjalan';
-        
-        $update_result = $this->progressModel->updateProgress($id_siswa, $id_kursus, $materi_selesai_baru, $persentase_baru, $status_baru);
-
-        return $update_result;
+    /**
+     * [FUNGSI BARU] Logic untuk Learning Reminder: Cek jika siswa stagnan.
+     */
+    public function checkStagnation($id_siswa) {
+        $sql = "
+            SELECT k.nama_kursus, k.id_kursus
+            FROM progres_belajar p
+            JOIN kursus k ON p.id_kursus = k.id_kursus
+            WHERE p.id_siswa = ? 
+            AND p.status_progres = 'sedang_berjalan'
+            -- Cek jika tidak ada penilaian dalam 7 hari terakhir (atau skor rendah)
+            AND DATEDIFF(NOW(), (SELECT MAX(tgl_penilaian) FROM penilaian pn WHERE pn.id_siswa = ? AND pn.id_kursus = p.id_kursus)) > 7
+            LIMIT 1
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("ii", $id_siswa, $id_siswa);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
     }
 }

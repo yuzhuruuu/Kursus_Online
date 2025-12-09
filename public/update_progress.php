@@ -11,8 +11,8 @@ if (!isset($_SESSION['id_siswa'])) {
     exit;
 }
 if (!isset($_GET['kursus_id']) || !isset($_GET['materi_id']) || !is_numeric($_GET['kursus_id']) || !is_numeric($_GET['materi_id'])) {
-    // Jika parameter tidak lengkap, kembalikan ke home
-    header("Location: index.php");
+    // Jika parameter tidak lengkap, kembalikan ke halaman kursus
+    header("Location: kursus.php"); // Lebih aman ke halaman kursus daripada index
     exit;
 }
 
@@ -23,7 +23,7 @@ $id_materi = (int)$_GET['materi_id'];
 
 $progress_controller = new ProgressController($conn);
 
-// Panggil fungsi controller untuk memperbarui progres
+// Panggil fungsi controller untuk memperbarui progres secara transaksional
 $update_success = $progress_controller->markMateriSelesai($id_siswa, $id_kursus, $id_materi);
 
 if ($update_success) {
