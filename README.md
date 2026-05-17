@@ -1,4 +1,4 @@
-# 🚀 Instan UTBK
+# Instan UTBK
 
 **Aplikasi Manajemen Kursus & Pemantauan Progres Belajar**
 
@@ -6,7 +6,7 @@ Aplikasi ini adalah solusi manajemen kursus dan pelacakan perkembangan belajar y
 
 ---
 
-## ✨ Fitur Unggulan (Data-Driven)
+## Fitur Unggulan (Data-Driven)
 
 Proyek ini dibangun di atas fondasi basis data yang kuat, memungkinkan fitur-fitur unik berikut:
 
@@ -32,7 +32,7 @@ Proyek ini dibangun di atas fondasi basis data yang kuat, memungkinkan fitur-fit
 
 ---
 
-## 📐 Arsitektur Data (ERD)
+## Arsitektur Data (ERD)
 
 Aplikasi dimodelkan menggunakan Entity-Relationship Diagram (ERD) untuk mendukung integritas data dan relasi bisnis kompleks.
 
@@ -46,7 +46,7 @@ Aplikasi dimodelkan menggunakan Entity-Relationship Diagram (ERD) untuk mendukun
 
 ---
 
-## 📂 Struktur Folder Proyek
+## Struktur Folder Proyek
 
 ```
 PROJECT-SBD/
@@ -76,7 +76,7 @@ PROJECT-SBD/
 
 ---
 
-## 🛠️ Instalasi Proyek (Local)
+## Instalasi Proyek (Local)
 
 **Persyaratan Sistem**
 
@@ -120,14 +120,14 @@ $db_name = 'db_kursusonline';
 
 ---
 
-## 🧭 Penggunaan & Alur Fungsional Singkat
+## Penggunaan & Alur Fungsional Singkat
 
 * **Pendaftaran Siswa** → Buat record di tabel `siswa` → Enrollment ke `siswaKursus` (transaksional) → Inisialisasi `progres_belajar` untuk setiap subtes.
 * **Siswa Mengerjakan Kuis** → Hasil disimpan di `penilaian` → Cron/logika dashboard menghitung `persentase_progres` dan memicu rekomendasi jika skor < threshold.
 
 ---
 
-## 📁 File SQL Penting
+## File SQL Penting
 
 * `kursus_onlinewm 48 fix banget.sql` — skema awal
 * `fix_siswa_table.sql` — perbaikan primary key & AUTO_INCREMENT
@@ -135,7 +135,7 @@ $db_name = 'db_kursusonline';
 
 ---
 
-## 📌 Tips Debugging (XAMPP / MySQL)
+## Tips Debugging (XAMPP / MySQL)
 
 * Jika MySQL tidak bisa start, cek port `3306` apakah sudah digunakan oleh proses lain: `netstat -aon | findstr :3306`.
 * Error `Unknown database` → pastikan database sudah dibuat dan nama di `database.php` sesuai.
@@ -143,7 +143,7 @@ $db_name = 'db_kursusonline';
 
 ---
 
-## 🧩 Kontribusi
+## Kontribusi
 
 Kontribusi sangat dipersilakan. Beberapa cara kontribusi:
 
@@ -156,13 +156,13 @@ Mohon sertakan deskripsi perubahan dan file SQL jika terkait struktur DB.
 
 ---
 
-## 📜 Lisensi
+## Lisensi
 
 This project menggunakan lisensi **MIT** — lihat file `LICENSE`.
 
 ---
 
-## 🤝 Kontak
+## Kontak
 
 Jika ada pertanyaan, laporan bug, atau mau kolaborasi, hubungi:
 
