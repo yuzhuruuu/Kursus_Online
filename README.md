@@ -169,7 +169,6 @@ Jika ada pertanyaan, laporan bug, atau mau kolaborasi, hubungi:
 =======
 * Nama: Yusri
 * Email: *[annisayusri59@gmail.com](mailto:annisayusri59@gmail.com)*
->>>>>>> aa3df1a300e26df55af4814df59176cc98f8a967
 
 ---
 
